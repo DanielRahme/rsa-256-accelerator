@@ -51,7 +51,6 @@ architecture Behavioral of mod_prod_blakley is
     signal in_reg_enable : std_logic;
     signal out_reg_enable : std_logic;
     signal calc_enable : std_logic;
-    signal B_bit_index          : std_logic_vector(7 downto 0);
 
 begin
 
@@ -67,8 +66,7 @@ begin
         -- Control singals to datapath
         in_reg_enable => in_reg_enable,
         out_reg_enable => out_reg_enable,
-        calc_enable => calc_enable,
-        B_bit_index => B_bit_index
+        calc_enable => calc_enable
     );
 
 
@@ -87,8 +85,7 @@ begin
         -- Control singals
         in_reg_enable => in_reg_enable,
         out_reg_enable => out_reg_enable,
-        calc_enable => calc_enable,
-        B_bit_index => B_bit_index
+        calc_enable => calc_enable
     );
 
 end Behavioral;

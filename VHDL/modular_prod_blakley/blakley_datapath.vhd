@@ -35,48 +35,68 @@ use IEEE.std_logic_unsigned.ALL;
 
 entity blakley_datapath is
     Port ( 
-            reset_n : in std_logic;
-            clk : in std_logic;
-            A : in std_logic_vector (255 downto 0);
-            B : in std_logic_vector (255 downto 0);
-            n : in std_logic_vector (255 downto 0);
-            C : out std_logic_vector (255 downto 0);
-            in_reg_enable : in std_logic;
-            out_reg_enable : in std_logic;
-            calc_enable : in std_logic;
-            B_bit_index : in std_logic_vector (7 downto 0));
+            -- Inputs
+            reset_n         : in std_logic;
+            clk             : in std_logic;
+            A               : in std_logic_vector (255 downto 0);
+            B               : in std_logic_vector (255 downto 0);
+            n               : in std_logic_vector (255 downto 0);
+            in_reg_enable   : in std_logic;
+            out_reg_enable  : in std_logic;
+            calc_enable     : in std_logic;
+            -- Outputs
+            C               : out std_logic_vector (255 downto 0)
+         );
 end blakley_datapath;
 
 architecture Behavioral of blakley_datapath is
-    signal sum1 : std_logic_vector(255 downto 0); -- NO CARRY
-    signal p_r, p_r_nxt  : std_logic_vector(255 downto 0);
-    signal B_idx : std_logic;
-
+    signal sum1             : std_logic_vector(255 downto 0); -- NO CARRY
+    signal p_r, p_r_nxt     : std_logic_vector(255 downto 0);
+    signal b_idx_bit        : std_logic;
+    signal b_idx_cntr       : unsigned(7 downto 0);
 
 begin
-    B_idx <= B(to_integer(unsigned(B_bit_index)));
 
-    process(A, B_idx, p_r) begin
-        if (B_idx = '1') then
+    -- The bit-selector of B input
+    b_idx_bit <= B(to_integer(unsigned(b_idx_cntr)));
+
+    B_idx_counter: process(clk, reset_n) begin
+        if (reset_n = '0') then
+            b_idx_cntr <= (others => '0');
+
+        elsif (rising_edge(clk)) then
+            b_idx_cntr <= b_idx_cntr + 1;
+        end if;
+    end process;
+
+
+    -- Addition: A + 2P
+    sum: process(A, b_idx_bit, p_r) begin
+        if (b_idx_bit = '1') then -- if calc enable
             sum1 <= std_logic_vector(unsigned(A) + unsigned((p_r(254 downto 0) & '0'))); -- A + 2*p
+
         else
             sum1 <= (p_r(254 downto 0) & '0'); -- 2*p
         end if;
     end process;
 
-    p_register : process(clk, reset_n) begin
+    p_register: process(clk, reset_n) begin
         if (reset_n = '0') then 
             p_r <= (others => '0');
 
         elsif (rising_edge(clk)) then
-            --if (out_reg_enable = '1') then
+            --if (calc_enable = '1') then
                 p_r <= p_r_nxt;
             --end if;
         end if;
     end process;
 
 
-    comparator : process(sum1, n) begin
+    -- Modulus by subtraction. Maximum 2 subtractions needed
+    -- If sum > n then no modulus
+    -- If sum < n then sum - n
+    -- If sum < 2n then sum - 2n (NOT conditionally checked)
+    modulus: process(sum1, n) begin
         if (sum1 > n) then 
             p_r_nxt <= sum1;
 
@@ -84,10 +104,19 @@ begin
             p_r_nxt <= std_logic_vector(unsigned(sum1) - unsigned(n));
 
         else
-            p_r_nxt <= sum1 - (n(254 downto 0) & '0');
+            p_r_nxt <= sum1 - (n(254 downto 0) & '0'); -- p_next <= sum - 2n
         end if;
     end process;
 
-    C <= p_r_nxt;
+    result_reg: process (clk, reset_n) begin
+        if (reset_n = '0') then
+            C <= (others => '0');
+
+        elsif (rising_edge(clk)) then
+            if (out_reg_enable = '1') then
+                C <= p_r_nxt;
+            end if;
+        end if;
+    end process;
 
 end Behavioral;

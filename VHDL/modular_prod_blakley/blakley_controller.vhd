@@ -41,8 +41,7 @@ entity blakley_controller is
             output_valid : out STD_LOGIC;
             in_reg_enable : out STD_LOGIC;
             calc_enable : out STD_LOGIC;
-            out_reg_enable : out STD_LOGIC;
-            B_bit_index : out STD_LOGIC_VECTOR (7 downto 0));
+            out_reg_enable : out STD_LOGIC);
 end blakley_controller;
 
 architecture impl of blakley_controller is
