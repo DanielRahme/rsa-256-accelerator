@@ -38,8 +38,31 @@ entity mod_prod_temp is
 end mod_prod_temp;
 
 architecture Behavioral of mod_prod_temp is
+    signal input_valid : STD_LOGIC;
+    signal input_ready  : STD_LOGIC;
+    signal output_ready : STD_LOGIC;
+    signal output_valid : STD_LOGIC;
 
 begin
+
+
+    u_mod_prod_blakley : entity work.mod_prod_blakley port map (
+        -- Clock and reset
+        reset_n => reset_n,
+        clk => clk,
+
+        A            => A,
+        B            => B,
+        n            => n,
+        C            => mod_prod,
+
+        input_valid  => input_valid,
+        input_ready  => input_ready,
+
+        output_ready => output_ready,
+        output_valid => output_valid
+    );
+
 
 
 end Behavioral;

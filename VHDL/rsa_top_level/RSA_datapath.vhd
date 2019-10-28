@@ -45,8 +45,20 @@ entity RSA_datapath is
 end RSA_datapath;
 
 architecture Behavioral of RSA_datapath is
+    signal data_out_valid : std_logic;
+    signal init : std_logic;
 
 begin
+    u_mod_exp_datapath : entity work.mod_exp_datapath port map (
+        M => msgin_data,
+        e => key_e_d,
+        n => key_n,
+        clk => clk,
+        reset_n => reset_n,
+        data_out_valid => data_out_valid,
+        init => init,
+        C => msgout_data
+    );
 
 
 end Behavioral;
