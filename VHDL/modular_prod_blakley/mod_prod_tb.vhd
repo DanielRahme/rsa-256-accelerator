@@ -26,7 +26,8 @@ architecture arch of mod_prod_tb is
 
 begin
 
-    uut_mod_prod : entity work.mod_prod_blakley
+    uut_mod_prod : entity work.mod_prod_blakley(simple)
+    --uut_mod_prod : entity work.mod_prod_blakley(Behavioral)
         port map (
            reset_n      => reset_n_tb,
            clk          => clk_tb,
