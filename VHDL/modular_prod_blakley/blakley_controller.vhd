@@ -44,9 +44,27 @@ entity blakley_controller is
             out_reg_enable : out STD_LOGIC);
 end blakley_controller;
 
-architecture impl of blakley_controller is
+
+architecture Behavioral of blakley_controller is
 
 begin
+    -- Real control code
+end Behavioral;
 
 
-end impl;
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+-- Simple straight forward implementation
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+architecture simple of blakley_controller is
+    signal output_valid_r : std_logic;
+
+begin
+    -- Add a one cycle stall
+    output_valid_r <= input_valid;
+    output_valid <= output_valid_r;
+
+end simple;
