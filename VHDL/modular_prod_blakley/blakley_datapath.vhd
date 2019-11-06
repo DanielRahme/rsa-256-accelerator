@@ -55,10 +55,29 @@ architecture Behavioral of blakley_datapath is
     signal b_idx_bit        : std_logic;
     signal b_idx_cntr       : unsigned(7 downto 0);
 
+    signal A_r              :std_logic_vector(255 downto 0);
+    signal B_r              :std_logic_vector(255 downto 0);
+    signal n_r              :std_logic_vector(255 downto 0);
+
 begin
 
+    load_in: process(clk, reset_n) begin
+        if (reset_n = '0') then
+            A_r <= (others => '0');
+            B_r <= (others => '0');
+            n_r <= (others => '0');
+        
+        elsif (rising_edge(clk)) then
+            if (in_reg_enable = '1') then
+                A_r <= A;
+                B_r <= B;
+                n_r <= n;
+            end if;
+        end if;
+    end process;
+
     -- The bit-selector of B input
-    b_idx_bit <= B(to_integer(unsigned(b_idx_cntr)));
+    b_idx_bit <= B_r(to_integer(unsigned(b_idx_cntr)));
 
     B_idx_counter: process(clk, reset_n) begin
         if (reset_n = '0') then
@@ -71,9 +90,9 @@ begin
 
 
     -- Addition: A + 2P
-    sum: process(A, b_idx_bit, p_r) begin
+    sum: process(A_r, b_idx_bit, p_r) begin
         if (b_idx_bit = '1') then -- if calc enable
-            sum1 <= std_logic_vector(unsigned(A) + unsigned((p_r(254 downto 0) & '0'))); -- A + 2*p
+            sum1 <= std_logic_vector(unsigned(A_r) + unsigned((p_r(254 downto 0) & '0'))); -- A + 2*p
 
         else
             sum1 <= (p_r(254 downto 0) & '0'); -- 2*p
@@ -97,14 +116,14 @@ begin
     -- If sum < n then sum - n
     -- If sum < 2n then sum - 2n (NOT conditionally checked)
     modulus: process(sum1, n) begin
-        if (sum1 > n) then 
+        if (sum1 > n_r) then 
             p_r_nxt <= sum1;
 
-        elsif (sum1 < n) then
-            p_r_nxt <= std_logic_vector(unsigned(sum1) - unsigned(n));
+        elsif (sum1 < n_r) then
+            p_r_nxt <= std_logic_vector(unsigned(sum1) - unsigned(n_r));
 
         else
-            p_r_nxt <= sum1 - (n(254 downto 0) & '0'); -- p_next <= sum - 2n
+            p_r_nxt <= sum1 - (n_r(254 downto 0) & '0'); -- p_next <= sum - 2n
         end if;
     end process;
 
