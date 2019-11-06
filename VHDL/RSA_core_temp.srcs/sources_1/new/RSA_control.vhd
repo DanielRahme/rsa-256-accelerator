@@ -38,21 +38,25 @@ entity RSA_control is
            --clock and reset
            clk :  in std_logic;
            reset_n : in std_logic;
+           
+           --other useful signal for control
+           key_e   : in std_logic_vector(255 downto 0); 
+           
            --control for interface
-           msgin_valid : in STD_LOGIC;
-           msgin_ready : out STD_LOGIC;
-           msgin_last : in STD_LOGIC;
-           msgout_valid : out STD_LOGIC;
-           msgout_ready : in STD_LOGIC;
-           msgout_last : out STD_LOGIC;
-           rsa_status : out STD_LOGIC_VECTOR (31 downto 0);
+           msgin_valid   : in STD_LOGIC;
+           msgin_ready   : out STD_LOGIC;
+           msgin_last    : in STD_LOGIC;
+           msgout_valid  : out STD_LOGIC;
+           msgout_ready  : in STD_LOGIC;
+           msgout_last   : out STD_LOGIC;
+           rsa_status    : out STD_LOGIC_VECTOR (31 downto 0);
            --control for datapath
-           input_valid : out std_logic;
-           input_ready : in std_logic;
-           output_valid: in std_logic;
-           output_ready: out std_logic;
-           initial_start: out std_logic;
-           e_idx_cntr : out std_logic_vector(7 downto 0);
+           input_valid   : out std_logic;
+           input_ready   : in std_logic;
+           output_valid  : in std_logic;
+           output_ready  : out std_logic;
+           initial_start : out std_logic;
+           e_idx_bit    : out std_logic;
            right_to_left_data_out_valid : out std_logic
            );
            
@@ -60,9 +64,13 @@ end RSA_control;
 
 architecture Behavioral of RSA_control is
 
-    signal e_idx_counter : std_logic_vector (7 downto 0);
+    signal e_idx_counter        : std_logic_vector (7 downto 0);
     signal output_valid_buffer  : std_logic;
-
+    signal key_e_shift_reg      : std_logic_vector(255 downto 0);
+    signal key_e_shift_reg_nxt  : std_logic_vector(255 downto 0);
+    signal end_flag_r           : std_logic;
+    signal end_flag_nxt         : std_logic;
+    signal zero_256bit          : std_logic_vector(255 downto 0) := (others => '0');
 begin
 
 --First modular operation
@@ -78,39 +86,70 @@ first_operation: process(reset_n, clk) begin
     end if;
 end process;
 
---e_index bit: continue to increment until 255 (later we will check if it finish earlier)
+--Key_e shift register
+key_e_shift_register : process(clk,reset_n) begin
+    if(reset_n = '0') then
+        key_e_shift_reg <= (others => '0');
+    elsif(rising_edge(clk)) then
+        key_e_shift_reg <= key_e_shift_reg_nxt;
+        
+    end if;
+end process;
+
+key_e_shifting_operation: process(key_e_shift_reg, e_idx_counter) begin
+    if (e_idx_counter = x"00") then
+        key_e_shift_reg_nxt <= key_e;
+    else
+        key_e_shift_reg_nxt <= '0' & key_e_shift_reg(255 downto 1);
+    end if;
+end process;
+
+e_idx_bit <= key_e_shift_reg(0);
+--e_index bit: continue to increment until key_e shift = 0 
+--generate the end flag need to understand when the shifted exponent is equal to 0
+
+-- condition for flag = shift exponent equal to zero or e_idx_count reach 255
+end_flag_register: process (reset_n, clk) begin
+    if (reset_n = '0') then
+        end_flag_r <= '0';
+    elsif (rising_edge(clk)) then
+        end_flag_r <= end_flag_nxt;
+    end if;
+end process;
+
+end_flag_generation: process (key_e_shift_reg, e_idx_counter)  begin
+    if ((key_e_shift_reg(255 downto 0) and zero_256bit(255 downto 0)) = zero_256bit(255 downto 0)) then
+        end_flag_nxt <= '1';
+    else
+        end_flag_nxt <= '0';
+    end if;
+end process;
+
+
+
+
 e_index_selection : process(clk, reset_n) begin
     if (reset_n = '0') then
         e_idx_counter <= (others => '0');
     elsif(rising_edge(clk)) then
-        e_idx_counter <=  e_idx_counter + 1;
-    end if;
-end process;
-
-e_idx_cntr <= e_idx_counter;
-    
---output data when e_idx_cntr = 255, or when the exponent is done
-output_manage : process(clk, reset_n) begin
-    if(reset_n = '0') then
-        output_valid_buffer <= '0';
-    elsif rising_edge(clk) then
-        if (e_idx_counter <= x"11") then
-            output_valid_buffer <= '1';
-        else
-            output_valid_buffer <= '0';
+        if (end_flag_r = '1') then
+            e_idx_counter <= (others => '0');
+        else 
+            e_idx_counter <=  e_idx_counter + 1;
         end if;
     end if;
 end process;
 
+--e_idx_cntr <= e_idx_counter;
+
 --interface signals
-msgout_valid <= msgout_ready and output_valid_buffer;
-right_to_left_data_out_valid <= output_valid_buffer;
-input_valid <= output_valid_buffer;
-msgin_ready <= output_valid_buffer;
+msgout_valid <= msgout_ready and end_flag_r;
+right_to_left_data_out_valid <= end_flag_r;
+input_valid <= end_flag_r;
+msgin_ready <= end_flag_r;
 output_ready <= msgout_ready;
 
---still to implement
-msgout_last  <= msgin_last;
+msgout_last  <= msgin_last and end_flag_r;
 
 
 end Behavioral;

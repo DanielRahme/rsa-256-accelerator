@@ -62,7 +62,7 @@ architecture Behavioral of RSA_core is
         signal output_ready: std_logic;
         signal output_valid: std_logic; 
         signal initial_start: std_logic; 
-        signal e_idx_cntr: std_logic_vector (7 downto 0);
+        signal e_idx_bit: std_logic;
         signal right_to_left_data_out_valid: std_logic;
 begin
 
@@ -84,7 +84,7 @@ begin
         output_ready    => output_ready,
         output_valid    => output_valid,
         initial_start   => initial_start,
-        e_idx_cntr      => e_idx_cntr,
+        e_idx_bit       => e_idx_bit,
         right_to_left_data_out_valid    => right_to_left_data_out_valid
     );    
         
@@ -93,6 +93,9 @@ begin
         --clock and reset
         clk        => clk,
         reset_n    => reset_n,
+        
+        --other useful signal for control
+        key_e      => key_e,
         
         --control for interface
         msgin_valid     => msgin_valid,
@@ -109,7 +112,7 @@ begin
         output_ready    => output_ready,
         output_valid    => output_valid,
         initial_start   => initial_start,
-        e_idx_cntr      => e_idx_cntr,
+        e_idx_bit       => e_idx_bit,
         right_to_left_data_out_valid    => right_to_left_data_out_valid
         
         

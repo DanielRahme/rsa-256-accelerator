@@ -51,7 +51,7 @@ entity RSA_datapath is
            output_valid : out std_logic;
            output_ready : in std_logic;
            initial_start: in std_logic;
-           e_idx_cntr : in std_logic_vector(7 downto 0);
+           e_idx_bit : in std_logic;
            right_to_left_data_out_valid : in std_logic
            
          );
@@ -64,7 +64,6 @@ architecture Behavioral of RSA_datapath is
         signal first_mod_out : std_logic_vector (255 downto 0);
         signal mod_exp_out: std_logic_vector (255 downto 0);
         signal mod_prod_out: std_logic_vector(255 downto 0);
-        signal e_idx_bit: std_logic; --e(i)
         --register
         signal msg_r_nxt, msg_r: std_logic_vector (255 downto 0);
         signal result_r_nxt, result_r: std_logic_vector (255 downto 0);
@@ -150,14 +149,14 @@ begin
     );
     
     --result register, selecting if (e(i) == 1) 
-    e_idx_bit <= key_e(to_integer(unsigned(e_idx_cntr)));
-    ei_mux : process(mod_prod_out, result_r, key_e) begin
-        if(e_idx_bit = '1') then
-            result_r_nxt <= mod_prod_out;
-        else
-            result_r_nxt <= result_r;
-        end if;
-    end process;
+    --e_idx_bit <= key_e(to_integer(unsigned(e_idx_cntr)));
+ei_mux : process(e_idx_bit) begin
+    if(e_idx_bit = '1') then
+        result_r_nxt <= mod_prod_out;
+    else
+        result_r_nxt <= result_r;
+    end if;
+end process;
     
     result_register: process(clk, reset_n) begin
         if(reset_n ='0') then
