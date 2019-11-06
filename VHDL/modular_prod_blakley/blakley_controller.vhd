@@ -21,6 +21,8 @@
 
 library IEEE;
 use IEEE.std_logic_1164.ALL;
+use IEEE.numeric_std.ALL;
+use IEEE.std_logic_unsigned.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -49,18 +51,27 @@ end blakley_controller;
 
 
 architecture Behavioral of blakley_controller is
+    -- State declaration
     type States_t is (IDLE, LOAD_IN, CALC, FINISHED);
-    signal state : States_t;
+    signal state        : States_t;
+
+    -- Calculation counter
+    signal calc_counter : unsigned(7 downto 0);
+    signal calc_start   : std_logic;
 
 begin
     -- Real control code
     FSM: process(clk, reset_n) begin
         if (reset_n = '0') then
+            -- Outputs
             input_ready     <= '0';
             output_valid    <= '0';
             in_reg_enable   <= '0';
             calc_enable     <= '0';
             out_reg_enable  <= '0';
+
+            -- Internal signals
+            calc_start      <= '0';
             state           <= IDLE;
         
         elsif (rising_edge(clk)) then
@@ -73,6 +84,7 @@ begin
                     in_reg_enable   <= '0';
                     calc_enable     <= '0';
                     out_reg_enable  <= '0';
+                    calc_start      <= '0';
 
                     if (input_valid = '1') then
                         state <= LOAD_IN;
@@ -98,9 +110,12 @@ begin
                     in_reg_enable   <= '0';
                     calc_enable     <= '1';
                     out_reg_enable  <= '0';
+                    calc_start      <= '1';
 
                     -- if statement counter = 255
-                    state           <= FINISHED;
+                    if (calc_counter = 255) then
+                        state <= FINISHED;
+                    end if;
                     -- Load data and start counter
 
                 --------------------
@@ -119,15 +134,24 @@ begin
 
                 ----------------
                 ----- OTHERS -----
-                when OTHERS => 
-                    state <= IDLE;
-
-
+                    when OTHERS => 
+                        state <= IDLE;
+    
             end case;
-
         end if;
-
     end process;
+
+    Calculation_counter: process(clk, reset_n) begin
+        if (reset_n = '0') then
+            calc_counter <= (others => '0');
+
+        elsif (rising_edge(clk)) then
+            if (calc_start = '1') then
+                calc_counter <= calc_counter + 1;
+            end if;
+        end if;
+    end process;
+
 end Behavioral;
 
 
