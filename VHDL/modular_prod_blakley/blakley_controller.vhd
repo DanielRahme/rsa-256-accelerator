@@ -20,7 +20,7 @@
 
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.std_logic_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -33,22 +33,101 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity blakley_controller is
     Port ( 
-            reset_n : in STD_LOGIC;
-            clk : in STD_LOGIC;
-            input_valid : in STD_LOGIC;
-            input_ready : out STD_LOGIC;
-            output_ready : in STD_LOGIC;
-            output_valid : out STD_LOGIC;
-            in_reg_enable : out STD_LOGIC;
-            calc_enable : out STD_LOGIC;
-            out_reg_enable : out STD_LOGIC);
+            -- Input
+            reset_n         : in std_logic;
+            clk             : in std_logic;
+            input_valid     : in std_logic;
+            output_ready    : in std_logic;
+
+            -- Output
+            input_ready     : out std_logic;
+            output_valid    : out std_logic;
+            in_reg_enable   : out std_logic;
+            calc_enable     : out std_logic;
+            out_reg_enable  : out std_logic);
 end blakley_controller;
 
 
 architecture Behavioral of blakley_controller is
+    type States_t is (IDLE, LOAD_IN, CALC, FINISHED);
+    signal state : States_t;
 
 begin
     -- Real control code
+    FSM: process(clk, reset_n) begin
+        if (reset_n = '0') then
+            input_ready     <= '0';
+            output_valid    <= '0';
+            in_reg_enable   <= '0';
+            calc_enable     <= '0';
+            out_reg_enable  <= '0';
+            state           <= IDLE;
+        
+        elsif (rising_edge(clk)) then
+            case state is
+                ----------------
+                ----- IDLE -----
+                when IDLE =>
+                    input_ready     <= '1';
+                    output_valid    <= '0';
+                    in_reg_enable   <= '0';
+                    calc_enable     <= '0';
+                    out_reg_enable  <= '0';
+
+                    if (input_valid = '1') then
+                        state <= LOAD_IN;
+                    end if;
+                    -- idle stuff happening, if-state to next state
+                
+                -------------------
+                ----- LOAD IN -----
+                when LOAD_IN =>
+                    input_ready     <= '0';
+                    output_valid    <= '0';
+                    in_reg_enable   <= '1';
+                    calc_enable     <= '0';
+                    out_reg_enable  <= '0';
+
+                    state <= CALC;
+
+                ----------------
+                ----- CALC -----
+                when CALC =>
+                    input_ready     <= '0';
+                    output_valid    <= '0';
+                    in_reg_enable   <= '0';
+                    calc_enable     <= '1';
+                    out_reg_enable  <= '0';
+
+                    -- if statement counter = 255
+                    state           <= FINISHED;
+                    -- Load data and start counter
+
+                --------------------
+                ----- FINISHED -----
+                when FINISHED =>
+                    input_ready     <= '0';
+                    output_valid    <= '1';
+                    in_reg_enable   <= '0';
+                    calc_enable     <= '0';
+                    out_reg_enable  <= '1';
+                    
+                    if (output_ready = '1') then
+                        state <= IDLE;
+                    end if;
+                    -- Load out data and wait for out-ready
+
+                ----------------
+                ----- OTHERS -----
+                when OTHERS => 
+                    state <= IDLE;
+
+
+            end case;
+
+        end if;
+
+    end process;
 end Behavioral;
 
 

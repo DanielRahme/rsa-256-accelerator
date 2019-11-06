@@ -96,49 +96,49 @@ end Behavioral;
 --------------------------------------------------------
 -- Simple straight forward implementation
 --------------------------------------------------------
---------------------------------------------------------
---------------------------------------------------------
-architecture simple of mod_prod_blakley is
-    signal in_reg_enable : std_logic;
-    signal out_reg_enable : std_logic;
-    signal calc_enable : std_logic;
-
-begin
-
-    -- Instatiate controller module
-    u_blakley_controller: entity work.blakley_controller(simple) 
-    port map (
-        reset_n => reset_n,
-        clk => clk,
-        input_valid => input_valid,
-        input_ready => input_ready,
-        output_ready => output_ready,
-        output_valid => output_valid,
-
-        -- Control singals to datapath
-        in_reg_enable => in_reg_enable,
-        out_reg_enable => out_reg_enable,
-        calc_enable => calc_enable
-    );
-
-
-
-    -- Instatiate datapath module
-    u_blakley_datapath: entity work.blakley_datapath(simple) 
-    port map (
-        reset_n => reset_n,
-        clk => clk,
-
-        -- The data
-        A => A,
-        B => B,
-        C => C,
-        n => n,
-
-        -- Control singals
-        in_reg_enable => in_reg_enable,
-        out_reg_enable => out_reg_enable,
-        calc_enable => calc_enable
-    );
-
-end simple;
+----------------------------------------------------------
+----------------------------------------------------------
+--architecture simple of mod_prod_blakley is
+--    signal in_reg_enable : std_logic;
+--    signal out_reg_enable : std_logic;
+--    signal calc_enable : std_logic;
+--
+--begin
+--
+--    -- Instatiate controller module
+--    u_simple_controller: entity work.blakley_controller(simple) 
+--    port map (
+--        reset_n => reset_n,
+--        clk => clk,
+--        input_valid => input_valid,
+--        input_ready => input_ready,
+--        output_ready => output_ready,
+--        output_valid => output_valid,
+--
+--        -- Control singals to datapath
+--        in_reg_enable => in_reg_enable,
+--        out_reg_enable => out_reg_enable,
+--        calc_enable => calc_enable
+--    );
+--
+--
+--
+--    -- Instatiate datapath module
+--    u_simple_datapath: entity work.blakley_datapath(simple) 
+--    port map (
+--        reset_n => reset_n,
+--        clk => clk,
+--
+--        -- The data
+--        A => A,
+--        B => B,
+--        C => C,
+--        n => n,
+--
+--        -- Control singals
+--        in_reg_enable => in_reg_enable,
+--        out_reg_enable => out_reg_enable,
+--        calc_enable => calc_enable
+--    );
+--
+--end simple;
