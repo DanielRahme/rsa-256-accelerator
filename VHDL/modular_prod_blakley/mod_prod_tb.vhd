@@ -8,7 +8,7 @@ end mod_prod_tb;
 
 
 architecture arch of mod_prod_tb is
-    constant CLK_PERIOD : time := 20 ns; 
+    constant CLK_PERIOD : time := 5 ns; 
 
     -- Inputs
     signal reset_n_tb       : std_logic := '0';
@@ -26,7 +26,7 @@ architecture arch of mod_prod_tb is
 
 begin
 
-    --uut_mod_prod : entity work.mod_prod_blakley(simple)
+    --  uut_mod_prod : entity work.mod_prod_blakley(simple)
     uut_mod_prod : entity work.mod_prod_blakley(Behavioral)
         port map (
            reset_n      => reset_n_tb,
@@ -46,11 +46,17 @@ begin
     clk_tb <= not clk_tb after CLK_PERIOD/2;
 
     -- reset = 1 for first clock cycle and then 0
-    reset_n_tb <= '0', '1' after CLK_PERIOD/2;
+    -- reset_n_tb <= '0', '1' after CLK_PERIOD/2;
 
   -- Stimuli generation
   stimuli_proc: process
   begin
+    reset_n_tb <= '1';
+    wait for CLK_PERIOD;
+    reset_n_tb <= '0';
+    wait for CLK_PERIOD;
+    reset_n_tb <= '1';
+    wait for CLK_PERIOD;
   
     -- Send in first test vector
     -- 333 * 666 mod 69 = 12
