@@ -64,9 +64,9 @@ begin
         output_valid => output_valid,
 
         -- Control singals to datapath
+        calc_enable => calc_enable,
         in_reg_enable => in_reg_enable,
-        out_reg_enable => out_reg_enable,
-        calc_enable => calc_enable
+        out_reg_enable => out_reg_enable
     );
 
 

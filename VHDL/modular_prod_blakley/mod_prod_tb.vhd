@@ -60,12 +60,26 @@ begin
   
     -- Send in first test vector
     -- 333 * 666 mod 69 = 12
-    wait for 10*CLK_PERIOD;
+    wait for 5*CLK_PERIOD;
     input_valid_tb <= '1';
     output_ready_tb <= '1';
-    A_tb       <= std_logic_vector(to_unsigned(333, A_tb'length));
-    B_tb       <= std_logic_vector(to_unsigned(666, B_tb'length));
-    n_tb       <= std_logic_vector(to_unsigned(69, n_tb'length));
+    --A_tb       <= std_logic_vector(to_unsigned(333, A_tb'length));
+    --B_tb       <= std_logic_vector(to_unsigned(666, B_tb'length));
+    --n_tb       <= std_logic_vector(to_unsigned(69, n_tb'length));
+    
+    --- 42 * 34 mod 50 = 28
+    A_tb       <= std_logic_vector(to_unsigned(42, A_tb'length));
+    B_tb       <= std_logic_vector(to_unsigned(34, B_tb'length));
+    n_tb       <= std_logic_vector(to_unsigned(50, n_tb'length));
+    
+    wait for 5*CLK_PERIOD;
+    input_valid_tb <= '0';
+    output_ready_tb <= '1';
+    A_tb       <= std_logic_vector(to_unsigned(0, A_tb'length));
+    B_tb       <= std_logic_vector(to_unsigned(0, B_tb'length));
+    n_tb       <= std_logic_vector(to_unsigned(0, n_tb'length));
+    
+    wait for 500*CLK_PERIOD;
 
   end process;
 

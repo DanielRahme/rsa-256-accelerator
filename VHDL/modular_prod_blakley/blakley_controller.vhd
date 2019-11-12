@@ -56,26 +56,13 @@ architecture Behavioral of blakley_controller is
     signal state        : States_t;
 
     -- Calculation counter
-    signal calc_counter : unsigned(7 downto 0);
+    signal calc_counter : unsigned(8 downto 0);
     signal calc_start   : std_logic;
 
 begin
-    -- Real control code
-    FSM: process(clk, reset_n) begin
-        if (reset_n = '0') then
-            -- Outputs
-            input_ready     <= '0';
-            output_valid    <= '0';
-            in_reg_enable   <= '0';
-            calc_enable     <= '0';
-            out_reg_enable  <= '0';
 
-            -- Internal signals
-            calc_start      <= '0';
-            state           <= IDLE;
-        
-        elsif (rising_edge(clk)) then
-            case state is
+    process(state) begin
+        case state is
                 ----------------
                 ----- IDLE -----
                 when IDLE =>
@@ -85,7 +72,64 @@ begin
                     calc_enable     <= '0';
                     out_reg_enable  <= '0';
                     calc_start      <= '0';
+                -------------------
+                ----- LOAD IN -----
+                when LOAD_IN =>
+                    output_valid    <= '0';
+                    calc_enable     <= '0';
+                    out_reg_enable  <= '0';
+                    calc_start      <= '0';
+                
+                
+                    input_ready     <= '0';
+                    in_reg_enable   <= '1';
+                ----------------
+                ----- CALC -----
+                when CALC =>
+                    output_valid    <= '0';
+                    out_reg_enable  <= '0';
+                
+                    input_ready     <= '0';
+                    in_reg_enable   <= '0';
+                    calc_enable     <= '1';
+                    calc_start      <= '1';
+                --------------------
+                ----- FINISHED -----
+                when FINISHED =>
+                    calc_start      <= '0';
+                
+                    input_ready     <= '0';
+                    output_valid    <= '1';
+                    in_reg_enable   <= '0';
+                    calc_enable     <= '0';
+                    out_reg_enable  <= '1';
+                ----------------
+                ----- OTHERS -----
+                when OTHERS => 
+                    input_ready     <= '0';
+                    output_valid    <= '0';
+                    in_reg_enable   <= '0';
+                    calc_enable     <= '0';
+                    out_reg_enable  <= '0';
+                    calc_start      <= '0';
+                end case;
+    end process;
+    
+    -- Real control code
+    FSM: process(clk, reset_n) begin
+        if (reset_n = '0') then
+            -- Outputs
+          
 
+            -- Internal signals
+            --calc_start      <= '0';
+            state           <= IDLE;
+        
+        elsif (rising_edge(clk)) then
+            case state is
+                ----------------
+                ----- IDLE -----
+                when IDLE =>
                     if (input_valid = '1') then
                         state <= LOAD_IN;
                     end if;
@@ -94,40 +138,18 @@ begin
                 -------------------
                 ----- LOAD IN -----
                 when LOAD_IN =>
-                    input_ready     <= '0';
-                    output_valid    <= '0';
-                    in_reg_enable   <= '1';
-                    calc_enable     <= '0';
-                    calc_start      <= '0';
-                    out_reg_enable  <= '0';
-
                     state <= CALC;
 
                 ----------------
                 ----- CALC -----
                 when CALC =>
-                    input_ready     <= '0';
-                    output_valid    <= '0';
-                    in_reg_enable   <= '0';
-                    calc_enable     <= '1';
-                    out_reg_enable  <= '0';
-                    calc_start      <= '1';
-
-                    -- if statement counter = 255
-                    if (calc_counter = 255) then
+                    if (calc_counter >= 256) then
                         state <= FINISHED;
                     end if;
-                    -- Load data and start counter
 
                 --------------------
                 ----- FINISHED -----
                 when FINISHED =>
-                    input_ready     <= '0';
-                    output_valid    <= '1';
-                    in_reg_enable   <= '0';
-                    calc_enable     <= '0';
-                    out_reg_enable  <= '1';
-                    
                     if (output_ready = '1') then
                         state <= IDLE;
                     end if;
@@ -149,6 +171,8 @@ begin
         elsif (rising_edge(clk)) then
             if (calc_start = '1') then
                 calc_counter <= calc_counter + 1;
+            else
+               calc_counter <= (others => '0'); 
             end if;
         end if;
     end process;
