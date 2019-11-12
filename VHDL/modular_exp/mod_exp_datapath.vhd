@@ -110,7 +110,7 @@ sub_state_control : process (clk, reset_n) begin
                 sub_state <= send_to_mod_prod;
             end if;
         elsif sub_state = recieve_from_mod_prod then
-            if state = finished then
+            if (nor_reduce(e_reg) = '1') then
                 sub_state <= waiting;
             else
                 sub_state <= prepare;
@@ -149,14 +149,14 @@ process (clk, reset_n) begin
             end if;
             
         elsif state = calculating then        
-            if  sub_state = prepare then
-                e_reg <= '0' & e_reg(255 downto 1);               
+            if  sub_state = prepare then               
             elsif sub_state = send_to_mod_prod then
                 mod_prod_MM_A <= M_reg;
                 mod_prod_MM_B <= M_reg;
                 mod_prod_CM_A <= C_reg;
                 mod_prod_CM_B <= M_reg;
             elsif sub_state = recieve_from_mod_prod then
+                e_reg <= '0' & e_reg(255 downto 1);
                 M_reg <= mod_prod_MM_result;
                 if e_reg(0) = '1' then
                 C_reg <= mod_prod_CM_result;
