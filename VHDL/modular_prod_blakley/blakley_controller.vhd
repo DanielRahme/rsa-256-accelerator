@@ -98,6 +98,7 @@ begin
                     output_valid    <= '0';
                     in_reg_enable   <= '1';
                     calc_enable     <= '0';
+                    calc_start      <= '0';
                     out_reg_enable  <= '0';
 
                     state <= CALC;
