@@ -26,8 +26,8 @@ architecture arch of mod_prod_tb is
 
 begin
 
-    --  uut_mod_prod : entity work.mod_prod_blakley(simple)
-    uut_mod_prod : entity work.mod_prod_blakley(Behavioral)
+    --  uut_mod_prod : entity work.mod_prod(simple)
+    uut_mod_prod : entity work.mod_prod(Blakley)
         port map (
            reset_n      => reset_n_tb,
            clk          => clk_tb,
@@ -45,9 +45,6 @@ begin
     -- Clock generation
     clk_tb <= not clk_tb after CLK_PERIOD/2;
 
-    -- reset = 1 for first clock cycle and then 0
-    -- reset_n_tb <= '0', '1' after CLK_PERIOD/2;
-
   -- Stimuli generation
   stimuli_proc: process
   begin
@@ -59,22 +56,40 @@ begin
     wait for CLK_PERIOD;
   
     -- Send in first test vector
-    -- 333 * 666 mod 69 = 12
-    wait for 5*CLK_PERIOD;
-    input_valid_tb <= '1';
-    output_ready_tb <= '1';
-    --A_tb       <= std_logic_vector(to_unsigned(333, A_tb'length));
-    --B_tb       <= std_logic_vector(to_unsigned(666, B_tb'length));
-    --n_tb       <= std_logic_vector(to_unsigned(69, n_tb'length));
-    
-    --- 42 * 34 mod 50 = 28
-    A_tb       <= std_logic_vector(to_unsigned(42, A_tb'length));
-    B_tb       <= std_logic_vector(to_unsigned(34, B_tb'length));
-    n_tb       <= std_logic_vector(to_unsigned(50, n_tb'length));
-    
     wait for 5*CLK_PERIOD;
     input_valid_tb <= '0';
     output_ready_tb <= '1';
+
+    -- 420 * 1337 mod 6969 = 4020
+    input_valid_tb <= '1';
+    A_tb       <= std_logic_vector(to_unsigned(420, A_tb'length));
+    B_tb       <= std_logic_vector(to_unsigned(1337, B_tb'length));
+    n_tb       <= std_logic_vector(to_unsigned(6969, n_tb'length));
+    wait for 5*CLK_PERIOD;
+    input_valid_tb <= '0';
+    wait for 255*CLK_PERIOD;
+    
+    --- 42 * 34 mod 50 = 28
+    input_valid_tb <= '1';
+    A_tb       <= std_logic_vector(to_unsigned(42, A_tb'length));
+    B_tb       <= std_logic_vector(to_unsigned(34, B_tb'length));
+    n_tb       <= std_logic_vector(to_unsigned(50, n_tb'length));
+    wait for 5*CLK_PERIOD;
+    input_valid_tb <= '0';
+    wait for 255*CLK_PERIOD;
+
+    --- 10333 * 57683 mod 73555 = 22274
+    input_valid_tb <= '1';
+    A_tb       <= std_logic_vector(to_unsigned(10333, A_tb'length));
+    B_tb       <= std_logic_vector(to_unsigned(57683, B_tb'length));
+    n_tb       <= std_logic_vector(to_unsigned(73555, n_tb'length));
+    wait for 5*CLK_PERIOD;
+    input_valid_tb <= '0';
+    wait for 255*CLK_PERIOD;
+    
+    wait for 5*CLK_PERIOD;
+    input_valid_tb <= '0';
+    output_ready_tb <= '0';
     A_tb       <= std_logic_vector(to_unsigned(0, A_tb'length));
     B_tb       <= std_logic_vector(to_unsigned(0, B_tb'length));
     n_tb       <= std_logic_vector(to_unsigned(0, n_tb'length));
