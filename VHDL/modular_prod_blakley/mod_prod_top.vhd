@@ -1,37 +1,8 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 21.10.2019 19:34:10
--- Design Name: 
--- Module Name: mod_prod_blakley - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
-entity mod_prod_blakley is
+entity mod_prod is
     Port (
            reset_n      : in std_logic;
            clk          : in std_logic;
@@ -45,17 +16,16 @@ entity mod_prod_blakley is
            output_valid : out std_logic;
            C            : out std_logic_vector (255 downto 0)
            );
-end mod_prod_blakley;
+end mod_prod;
 
-architecture Behavioral of mod_prod_blakley is
+architecture Blakley of mod_prod is
     signal in_reg_enable : std_logic;
     signal out_reg_enable : std_logic;
     signal calc_enable : std_logic;
-
 begin
 
     -- Instatiate controller module
-    u_blakley_controller: entity work.blakley_controller(Behavioral) port map (
+    u_mod_prod_controller: entity work.mod_prod_controller(Blakley) port map (
         reset_n => reset_n,
         clk => clk,
         input_valid => input_valid,
@@ -64,15 +34,13 @@ begin
         output_valid => output_valid,
 
         -- Control singals to datapath
+        calc_enable => calc_enable,
         in_reg_enable => in_reg_enable,
-        out_reg_enable => out_reg_enable,
-        calc_enable => calc_enable
+        out_reg_enable => out_reg_enable
     );
 
-
-
     -- Instatiate datapath module
-    u_blakley_datapath: entity work.blakley_datapath(Behavioral) port map (
+    u_mod_prod_datapath: entity work.mod_prod_datapath(Blakley) port map (
         reset_n => reset_n,
         clk => clk,
 
@@ -88,7 +56,7 @@ begin
         calc_enable => calc_enable
     );
 
-end Behavioral;
+end Blakley;
 
 
 --------------------------------------------------------
@@ -98,7 +66,7 @@ end Behavioral;
 --------------------------------------------------------
 ----------------------------------------------------------
 ----------------------------------------------------------
---architecture simple of mod_prod_blakley is
+--architecture simple of mod_prod is
 --    signal in_reg_enable : std_logic;
 --    signal out_reg_enable : std_logic;
 --    signal calc_enable : std_logic;
@@ -106,7 +74,7 @@ end Behavioral;
 --begin
 --
 --    -- Instatiate controller module
---    u_simple_controller: entity work.blakley_controller(simple) 
+--    u_simple_controller: entity work.mod\_prod_controller(simple) 
 --    port map (
 --        reset_n => reset_n,
 --        clk => clk,
@@ -124,7 +92,7 @@ end Behavioral;
 --
 --
 --    -- Instatiate datapath module
---    u_simple_datapath: entity work.blakley_datapath(simple) 
+--    u_simple_datapath: entity work.mod\_prod_datapath(simple) 
 --    port map (
 --        reset_n => reset_n,
 --        clk => clk,
