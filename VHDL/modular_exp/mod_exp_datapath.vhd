@@ -41,7 +41,7 @@ signal nxt_sub_state : sub_state_type;
 
 begin
 
-mod_prod_MM: entity work.mod_prod_blakley port map(
+mod_prod_MM: entity work.mod_prod(blakley) port map(
     clk     => clk,
     reset_n => reset_n,
     A       => mod_prod_MM_A,
@@ -55,7 +55,7 @@ mod_prod_MM: entity work.mod_prod_blakley port map(
 );
 
 
-mod_prod_CM: entity work.mod_prod_blakley port map(
+mod_prod_CM: entity work.mod_prod(blakley) port map(
     clk     => clk,
     reset_n => reset_n,
     A       => mod_prod_CM_A,
@@ -139,24 +139,32 @@ process (clk, reset_n) begin
                 e_reg <= e;
                 C_reg <= (255 downto 1 => '0') & '1';
                 n_reg <= n;
+                mod_prod_data_out_ready <= '0';
             elsif sub_state = send_to_mod_prod then
+                mod_prod_data_in_valid <= '1';
                 mod_prod_MM_A <= M_reg;
                 mod_prod_MM_B <= (255 downto 1 => '0') & '1';
                 mod_prod_CM_A <= (255 downto 1 => '0') & '1';
                 mod_prod_CM_B <= (255 downto 1 => '0') & '1';
             elsif sub_state = recieve_from_mod_prod then
                 M_reg <= mod_prod_MM_result;
+                mod_prod_data_in_valid <= '0';
+                mod_prod_data_out_ready <= '1';
             end if;
             
         elsif state = calculating then        
-            if  sub_state = prepare then               
+            if  sub_state = prepare then   
+                mod_prod_data_out_ready <= '0';            
             elsif sub_state = send_to_mod_prod then
+                mod_prod_data_in_valid <= '1';
                 mod_prod_MM_A <= M_reg;
                 mod_prod_MM_B <= M_reg;
                 mod_prod_CM_A <= C_reg;
                 mod_prod_CM_B <= M_reg;
             elsif sub_state = recieve_from_mod_prod then
                 e_reg <= '0' & e_reg(255 downto 1);
+                mod_prod_data_in_valid <= '0';
+                mod_prod_data_out_ready <= '1';
                 M_reg <= mod_prod_MM_result;
                 if e_reg(0) = '1' then
                 C_reg <= mod_prod_CM_result;
@@ -169,7 +177,6 @@ process (clk, reset_n) begin
     end if; 
 end process;
 
-        mod_prod_data_in_valid <= '1';
         C <= C_reg;
 
 end Behavioral;
