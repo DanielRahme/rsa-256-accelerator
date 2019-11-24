@@ -62,9 +62,13 @@ begin
 
     -- 420 * 1337 mod 6969 = 4020
     input_valid_tb <= '1';
-    A_tb       <= std_logic_vector(to_unsigned(420, A_tb'length));
-    B_tb       <= std_logic_vector(to_unsigned(1337, B_tb'length));
-    n_tb       <= std_logic_vector(to_unsigned(6969, n_tb'length));
+	--modulus <= x"99925173ad65686715385ea800cd28120288fc70a9bc98dd4c90d676f8ff768d";
+    A_tb <= x"0000000011111111222222223333333344444444555555556666666677777777";
+    B_tb <= x"0000000011111111222222223333333344444444555555556666666677777777";
+    --A_tb       <= std_logic_vector(to_unsigned(420, A_tb'length));
+    --B_tb       <= std_logic_vector(to_unsigned(1337, B_tb'length));
+	  n_tb <= x"99925173ad65686715385ea800cd28120288fc70a9bc98dd4c90d676f8ff768d";
+    --n_tb       <= std_logic_vector(to_unsigned(6969, n_tb'length));
     wait for 5*CLK_PERIOD;
     input_valid_tb <= '0';
     wait for 255*CLK_PERIOD;

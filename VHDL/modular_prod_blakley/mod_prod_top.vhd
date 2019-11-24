@@ -22,6 +22,7 @@ architecture Blakley of mod_prod is
     signal in_reg_enable : std_logic;
     signal out_reg_enable : std_logic;
     signal calc_enable : std_logic;
+    signal calc_done : std_logic;
 begin
 
     -- Instatiate controller module
@@ -36,6 +37,7 @@ begin
         -- Control singals to datapath
         calc_enable => calc_enable,
         in_reg_enable => in_reg_enable,
+        calc_done => calc_done,
         out_reg_enable => out_reg_enable
     );
 
@@ -53,6 +55,7 @@ begin
         -- Control singals
         in_reg_enable => in_reg_enable,
         out_reg_enable => out_reg_enable,
+        calc_done => calc_done,
         calc_enable => calc_enable
     );
 
