@@ -29,10 +29,9 @@ mod_ex: entity work.mod_exp port map(
     mod_exp_in_ready  => mod_exp_in_ready,
     mod_exp_out_valid => mod_exp_out_valid
 );
-M <= std_logic_vector(to_unsigned(199412312,M'length));--x"23026c469918f5ea097f843dc5d5259192f9d3510415841ce834324f4c237ac7";
-e <= std_logic_vector(to_unsigned(2123123123,M'length));--x"0cea1651ef44be1f1f1476b7539bed10d73e3aac782bd9999a1e5a790932bfe9";
-n <= std_logic_vector(to_unsigned(1111111122,M'length));--x"99925173ad65686715385ea800cd28120288fc70a9bc98dd4c90d676f8ff768d";
---(255 downto 4 => '0') & "0111";
+M <= x"1059393059295030105939305929503010593930592950301059393059295030";--x"23026c469918f5ea097f843dc5d5259192f9d3510415841ce834324f4c237ac7";
+e <= x"1050395671943674105939305929503010593930592950301059393059295030";--x"0cea1651ef44be1f1f1476b7539bed10d73e3aac782bd9999a1e5a790932bfe9";
+n <= x"5000395671999321105939305929503010593930592950301059393059295030";--x"99925173ad65686715385ea800cd28120288fc70a9bc98dd4c90d676f8ff768d";
 --(255 downto 10 => '0') & "1110001110";
 --std_logic_vector(to_unsigned(666,M'length));
 -- generate a clock
@@ -41,20 +40,10 @@ clk <= '1'; wait for 50ns;
 clk <= '0'; wait for 50ns;
 end process;
 
-
-valid: process begin 
-mod_exp_in_valid <= '0'; wait for 500ns;
-mod_exp_in_valid <= '1'; wait for 500ns;
-mod_exp_in_valid <= '0'; wait;
-end process;
-
-READY: process begin 
-mod_exp_out_ready <= '0';
-wait until mod_exp_out_valid = '1';
-wait for 500ns;
-mod_exp_out_ready <= '1'; wait for 500ns;
-mod_exp_out_ready<= '0'; wait;
-end process;
-
+--reset_test: process begin
+--reset_n <= '1'; wait for 10us;
+--reset_n <= '0'; wait for 200ns;
+--reset_n <= '1'; wait;
+--end process;
 reset_n <= '1';
 end Behavioral;
