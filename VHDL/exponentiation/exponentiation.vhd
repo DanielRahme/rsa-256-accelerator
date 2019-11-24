@@ -40,7 +40,12 @@ architecture expBehave of exponentiation is
 	signal Mod_prod_done	    : std_logic;
 	signal Mod_prod_in_valid	: std_logic;
 	signal Mod_prod_out_ready	: std_logic;
-	signal Mod_prod_in_ready	: std_logic;
+    signal Mod_prod_in_ready	: std_logic;
+
+    signal First_mod_done	    : std_logic;
+    signal First_mod_in_valid	: std_logic;
+    signal First_mod_out_ready	: std_logic;
+    signal First_mod_in_ready	: std_logic;
 
 begin
 
@@ -59,7 +64,12 @@ begin
         Load_in_reg     	=> Load_in_reg,
         Load_calc_reg   	=> Load_calc_reg,
         Calc_done       	=> Calc_done,
-		Load_out_reg    	=> Load_out_reg,
+        Load_out_reg    	=> Load_out_reg,
+
+        First_mod_done    	=> First_mod_done,
+        First_mod_out_ready  => First_mod_out_ready,
+        First_mod_in_valid   => First_mod_in_valid,
+        First_mod_in_ready   => First_mod_in_ready,
 
         Mod_prod_done    	=> Mod_prod_done,
         Mod_prod_out_ready  => Mod_prod_out_ready,
@@ -82,7 +92,12 @@ begin
         Load_in_reg     => Load_in_reg,
         Load_calc_reg   => Load_calc_reg,
         Calc_done       => Calc_done,
-		Load_out_reg    => Load_out_reg,
+        Load_out_reg    => Load_out_reg,
+
+        First_mod_done    	=> First_mod_done,
+        First_mod_out_ready  => First_mod_out_ready,
+        First_mod_in_valid   => First_mod_in_valid,
+        First_mod_in_ready   => First_mod_in_ready,
 
         Mod_prod_done    	=> Mod_prod_done,
         Mod_prod_out_ready  => Mod_prod_out_ready,

@@ -22,6 +22,11 @@ entity exponentiation_controller is
         Calc_done       : in std_logic;
         Load_out_reg    : out std_logic;
 
+        First_mod_done	    : in std_logic;
+        First_mod_in_valid	: out std_logic;
+        First_mod_out_ready	: out std_logic;
+        First_mod_in_ready	: in std_logic;
+
         Mod_prod_done	        : in std_logic;
         Mod_prod_in_valid	    : out std_logic;
         Mod_prod_out_ready	    : out std_logic;
@@ -32,7 +37,7 @@ end exponentiation_controller;
 
 architecture Behavioral of exponentiation_controller is
     -- State declaration
-    type States_t is (IDLE, LOAD_IN, FIRST_CALC, CALC, WAIT_MOD_CALC, LOAD_OUT);
+    type States_t is (IDLE, LOAD_IN, FIRST_CALC, WAIT_FIRST_CALC, CALC, WAIT_MOD_CALC, LOAD_OUT);
     signal state, next_state        : States_t;
 
     -- Calculation counter
@@ -41,6 +46,7 @@ architecture Behavioral of exponentiation_controller is
 
     signal mod_prod_done_i      : std_logic;
     signal mod_prod_in_ready_i  : std_logic;
+
 
 begin
 
@@ -71,6 +77,8 @@ begin
 
                 Mod_prod_out_ready	<= '0';
                 Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '0';
+                First_mod_in_valid	<= '0';
 
             -------------------
             ----- LOAD IN -----
@@ -84,16 +92,38 @@ begin
 
                 Mod_prod_out_ready	<= '0';
                 Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '0';
+                First_mod_in_valid	<= '0';
+
+            ----------------
+            ----- WAIT FIRST_CALC -----
+            when WAIT_FIRST_CALC =>
+                input_ready   <= '0';
+                output_valid  <= '0';
+
+                Load_in_reg   <= '0';
+                Load_calc_reg       <= '0';
+                Load_out_reg  <= '0';
+
+                Mod_prod_out_ready	<= '0';
+                Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '1';
+                First_mod_in_valid	<= '1';
 
             ----------------
             ----- FIRST_CALC -----
-            --when FIRST_CALC =>
-                --input_ready   <= '0';
-                --output_valid  <= '0';
-                --Load_in_reg   <= '0';
-                --Load_calc_reg       <= '1';
-                --Mod_prod_out_ready	<= '0';
-                --Load_out_reg  <= '0';
+            when FIRST_CALC =>
+                input_ready   <= '0';
+                output_valid  <= '0';
+
+                Load_in_reg   <= '0';
+                Load_calc_reg       <= '0';
+                Load_out_reg  <= '0';
+
+                Mod_prod_out_ready	<= '0';
+                Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '1';
+                First_mod_in_valid	<= '0';
 
             ----------------
             ----- WAIT_MOD_CALC -----
@@ -106,18 +136,23 @@ begin
 
                 Mod_prod_out_ready  <= '0';
                 Mod_prod_in_valid	<= '1';
+                First_mod_out_ready	<= '0';
+                First_mod_in_valid	<= '0';
 
             ----------------
             ----- CALC -----
             when CALC =>
                 input_ready   <= '0';
                 output_valid  <= '0';
-                Load_in_reg   <= '0';
 
-                Mod_prod_out_ready <= '1';
+                Load_in_reg   <= '0';
                 Load_calc_reg      <= '1';
                 Load_out_reg  <= '0';
+
+                Mod_prod_out_ready <= '1';
                 Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '0';
+                First_mod_in_valid	<= '0';
 
             --------------------
             ----- LOAD OUT -----
@@ -128,8 +163,11 @@ begin
                 Load_in_reg   <= '0';
                 Load_calc_reg <= '0';
                 Load_out_reg  <= '1';
+
                 Mod_prod_out_ready	<= '0';
                 Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '0';
+                First_mod_in_valid	<= '0';
 
             ------------------
             ----- OTHERS -----
@@ -140,12 +178,16 @@ begin
                 Load_in_reg   <= '0';
                 Load_calc_reg <= '0';
                 Load_out_reg  <= '0';
+
                 Mod_prod_out_ready	<= '0';
                 Mod_prod_in_valid	<= '0';
+                First_mod_out_ready	<= '0';
+                First_mod_in_valid	<= '0';
             end case;
     end process;
+
     
-    next_state_proc: process(state, input_valid, output_ready, Calc_done, Mod_prod_done) begin
+    next_state_proc: process(all) begin
         case state is
             ----------------
             ----- IDLE -----
@@ -159,12 +201,21 @@ begin
             -------------------
             ----- LOAD IN -----
             when LOAD_IN =>
-                next_state <= WAIT_MOD_CALC;
+                next_state <= WAIT_FIRST_CALC;
+
+            -------------------
+            ----- WAIT FIRST CALC -----
+            when WAIT_FIRST_CALC =>
+                if (First_mod_done = '1') then
+                    next_state <= FIRST_CALC;
+                else
+                    next_state <= WAIT_FIRST_CALC;
+                end if;
 
             -------------------
             ----- FIRST CALC -----
-            --when FIRST_CALC =>
-                --next_state <= WAIT_MOD_CALC;
+            when FIRST_CALC =>
+                next_state <= WAIT_MOD_CALC;
 
             -------------------
             ----- WAIT MOD CALC -----
@@ -192,7 +243,6 @@ begin
                 else
                     next_state <= LOAD_OUT;
                 end if;
-                -- Load out data and wait for out-ready
 
             ----------------
             ----- OTHERS -----
