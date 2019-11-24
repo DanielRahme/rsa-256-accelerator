@@ -142,18 +142,20 @@ CM_out : process (reset_n,clk) begin
     end if;
 end process;
 
-exponent : process (reset_n,mod_prod_MM_data_in_ready) begin
+exponent : process (reset_n,clk) begin
     if reset_n = '0' then
         e_reg <= (256 downto 0 => '0');
-    end if;
-    if init = '1' then
-        e_reg <= e & '0';
-    elsif rising_edge(mod_prod_MM_data_in_ready) and init = '0' then
-        e_reg <= '0' & e_reg(256 downto 1); 
+    elsif rising_edge(clk) then
+        if init = '1' then
+            e_reg <= e & '0';
+        elsif init = '0' and mod_prod_MM_data_in_ready = '1' and mod_prod_MM_data_in_valid = '1'  then
+            e_reg <= '0' & e_reg(256 downto 1); 
+        end if;
     end if;
 end process; 
 
-
+--mod_prod_MM_data_in_ready
+--mod_prod_MM_data_in_valid
 
 end Behavioral_v2;
 
