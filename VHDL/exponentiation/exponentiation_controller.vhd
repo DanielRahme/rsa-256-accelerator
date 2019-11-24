@@ -20,22 +20,32 @@ entity exponentiation_controller is
         Load_in_reg     : out std_logic;
         Load_calc_reg   : out std_logic;
         Calc_done       : in std_logic;
-        Load_out_reg    : out std_logic
-        --Mod_prod_finished	: out std_logic
+        Load_out_reg    : out std_logic;
+
+        Mod_prod_done	        : in std_logic;
+        Mod_prod_in_valid	    : out std_logic;
+        Mod_prod_out_ready	    : out std_logic;
+        Mod_prod_in_ready	    : in std_logic
     );
 end exponentiation_controller;
 
 
 architecture Behavioral of exponentiation_controller is
     -- State declaration
-    type States_t is (IDLE, LOAD_IN, CALC, LOAD_OUT);
+    type States_t is (IDLE, LOAD_IN, FIRST_CALC, CALC, WAIT_MOD_CALC, LOAD_OUT);
     signal state, next_state        : States_t;
 
     -- Calculation counter
     signal calc_counter : unsigned(8 downto 0);
     signal calc_start   : std_logic;
 
+    signal mod_prod_done_i      : std_logic;
+    signal mod_prod_in_ready_i  : std_logic;
+
 begin
+
+    mod_prod_done_i     <= Mod_prod_done;
+    mod_prod_in_ready_i <= Mod_prod_in_ready;
 
     state_reg: process(clk, reset_n) begin
         if (reset_n = '0') then
@@ -59,6 +69,9 @@ begin
                 Load_calc_reg <= '0';
                 Load_out_reg  <= '0';
 
+                Mod_prod_out_ready	<= '0';
+                Mod_prod_in_valid	<= '0';
+
             -------------------
             ----- LOAD IN -----
             when LOAD_IN =>
@@ -69,15 +82,42 @@ begin
                 Load_calc_reg <= '0';
                 Load_out_reg  <= '0';
 
+                Mod_prod_out_ready	<= '0';
+                Mod_prod_in_valid	<= '0';
+
+            ----------------
+            ----- FIRST_CALC -----
+            --when FIRST_CALC =>
+                --input_ready   <= '0';
+                --output_valid  <= '0';
+                --Load_in_reg   <= '0';
+                --Load_calc_reg       <= '1';
+                --Mod_prod_out_ready	<= '0';
+                --Load_out_reg  <= '0';
+
+            ----------------
+            ----- WAIT_MOD_CALC -----
+            when WAIT_MOD_CALC =>
+                input_ready   <= '0';
+                output_valid  <= '0';
+                Load_in_reg   <= '0';
+                Load_calc_reg      <= '0';
+                Load_out_reg  <= '0';
+
+                Mod_prod_out_ready  <= '0';
+                Mod_prod_in_valid	<= '1';
+
             ----------------
             ----- CALC -----
             when CALC =>
                 input_ready   <= '0';
                 output_valid  <= '0';
-
                 Load_in_reg   <= '0';
-                Load_calc_reg <= '1';
+
+                Mod_prod_out_ready <= '1';
+                Load_calc_reg      <= '1';
                 Load_out_reg  <= '0';
+                Mod_prod_in_valid	<= '0';
 
             --------------------
             ----- LOAD OUT -----
@@ -88,6 +128,8 @@ begin
                 Load_in_reg   <= '0';
                 Load_calc_reg <= '0';
                 Load_out_reg  <= '1';
+                Mod_prod_out_ready	<= '0';
+                Mod_prod_in_valid	<= '0';
 
             ------------------
             ----- OTHERS -----
@@ -98,10 +140,12 @@ begin
                 Load_in_reg   <= '0';
                 Load_calc_reg <= '0';
                 Load_out_reg  <= '0';
+                Mod_prod_out_ready	<= '0';
+                Mod_prod_in_valid	<= '0';
             end case;
     end process;
     
-    next_state_proc: process(state, input_valid, output_ready, Calc_done) begin
+    next_state_proc: process(state, input_valid, output_ready, Calc_done, Mod_prod_done) begin
         case state is
             ----------------
             ----- IDLE -----
@@ -115,7 +159,21 @@ begin
             -------------------
             ----- LOAD IN -----
             when LOAD_IN =>
-                next_state <= CALC;
+                next_state <= WAIT_MOD_CALC;
+
+            -------------------
+            ----- FIRST CALC -----
+            --when FIRST_CALC =>
+                --next_state <= WAIT_MOD_CALC;
+
+            -------------------
+            ----- WAIT MOD CALC -----
+            when WAIT_MOD_CALC =>
+                if (Mod_prod_done = '1') then
+                    next_state <= CALC;
+                else 
+                    next_state <= WAIT_MOD_CALC;
+                end if;
 
             ----------------
             ----- CALC -----
@@ -123,7 +181,7 @@ begin
                 if (Calc_done = '1') then
                     next_state <= LOAD_OUT;
                 else 
-                    next_state <= CALC;
+                    next_state <= WAIT_MOD_CALC;
                 end if;
 
             --------------------

@@ -32,10 +32,15 @@ end exponentiation;
 
 
 architecture expBehave of exponentiation is
-	signal Load_in_reg     : std_logic;
-	signal Load_calc_reg   : std_logic;
-	signal Calc_done       : std_logic;
-	signal Load_out_reg    : std_logic;
+	signal Load_in_reg     		: std_logic;
+	signal Load_calc_reg   		: std_logic;
+	signal Calc_done       		: std_logic;
+	signal Load_out_reg    		: std_logic;
+
+	signal Mod_prod_done	    : std_logic;
+	signal Mod_prod_in_valid	: std_logic;
+	signal Mod_prod_out_ready	: std_logic;
+	signal Mod_prod_in_ready	: std_logic;
 
 begin
 
@@ -45,17 +50,21 @@ begin
 		clk => clk,
 
         -- Top-level entitiy
-        input_valid => valid_in,
-        input_ready => ready_in,
-        output_ready => ready_out,
-        output_valid => valid_out,
+        input_valid 	=> valid_in,
+        input_ready 	=> ready_in,
+        output_ready 	=> ready_out,
+        output_valid 	=> valid_out,
 
         -- Datapath
-        Load_in_reg     => Load_in_reg,
-        Load_calc_reg   => Load_calc_reg,
-        Calc_done       => Calc_done,
-        Load_out_reg    => Load_out_reg
-        --Mod_prod_done    => Mod_prod_done
+        Load_in_reg     	=> Load_in_reg,
+        Load_calc_reg   	=> Load_calc_reg,
+        Calc_done       	=> Calc_done,
+		Load_out_reg    	=> Load_out_reg,
+
+        Mod_prod_done    	=> Mod_prod_done,
+        Mod_prod_out_ready  => Mod_prod_out_ready,
+        Mod_prod_in_valid   => Mod_prod_in_valid,
+        Mod_prod_in_ready   => Mod_prod_in_ready
     );
 
     -- Instatiate datapath module
@@ -73,8 +82,12 @@ begin
         Load_in_reg     => Load_in_reg,
         Load_calc_reg   => Load_calc_reg,
         Calc_done       => Calc_done,
-        Load_out_reg    => Load_out_reg
-        --Mod_prod_done    => Mod_prod_done
+		Load_out_reg    => Load_out_reg,
+
+        Mod_prod_done    	=> Mod_prod_done,
+        Mod_prod_out_ready  => Mod_prod_out_ready,
+        Mod_prod_in_valid   => Mod_prod_in_valid,
+        Mod_prod_in_ready   => Mod_prod_in_ready
     );
 
 end expBehave;

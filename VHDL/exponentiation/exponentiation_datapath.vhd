@@ -22,8 +22,12 @@ entity exponentiation_datapath is
 		Load_in_reg  : in std_logic;
 		Load_calc_reg  : in std_logic; -- based on modprod out valid
         Calc_done    : out std_logic;
-		Load_out_reg : in std_logic
-        --Mod_prod_done	: out std_logic
+        Load_out_reg : in std_logic;
+
+        Mod_prod_done	    : out std_logic;
+        Mod_prod_in_valid	: in std_logic;
+        Mod_prod_out_ready	: in std_logic;
+        Mod_prod_in_ready	: out std_logic
 	);
 end exponentiation_datapath;
 
@@ -36,21 +40,27 @@ architecture Behavioral of exponentiation_datapath is
     signal result_r, result_nxt     : std_logic_vector(C_block_size-1 downto 0);
 
     -- Modprod: b * b mod n
-    --signal mod_prod_bb_in_valid        : std_logic;
-    --signal mod_prod_bb_in_ready        : std_logic;
-    --signal mod_prod_bb_out_valid       : std_logic;
-    --signal mod_prod_bb_out_ready       : std_logic;
+    signal mod_prod_bb_in_valid        : std_logic;
+    signal mod_prod_bb_in_ready        : std_logic;
+    signal mod_prod_bb_out_valid       : std_logic;
+    signal mod_prod_bb_out_ready       : std_logic;
 
     -- Modprod: result * base mod n
     --signal mod_prod_rb_in_valid        : std_logic;
     --signal mod_prod_rb_in_ready        : std_logic;
     --signal mod_prod_rb_out_valid       : std_logic;
     --signal mod_prod_rb_out_ready       : std_logic;
-
-    --signal is_exp_one                  : std_logic;
 begin
 
+    -- Mod Prod B^2 % n signal assignments:
+    mod_prod_bb_in_valid    <= Mod_prod_in_valid;
+    mod_prod_bb_out_ready   <= Mod_prod_out_ready;
+    Mod_prod_done           <= mod_prod_bb_out_valid;-- add mod_prod_br later
+    Mod_prod_in_ready       <= mod_prod_bb_in_ready;-- add mod_prod_br later
 
+    -- TODO: Add mod prod br later
+    --process(mod_prod_bb_out_valid) begin
+    --end process;
 
     check_calc_done: process(exp_r) begin
         if (to_integer(unsigned(exp_r)) = 0) then
@@ -86,6 +96,8 @@ begin
         end if;
     end process;
 
+
+    -- TODO: Implement modulus by subtraction
     process(Message, Modulus) begin
         if (to_integer(unsigned(Message)) = 0 or to_integer(unsigned(Modulus)) = 0) then
             base_load <= (others => '0');
@@ -94,38 +106,29 @@ begin
         end if;
     end process;
 
-    ----------------------- BASE REG ------------------------------
-    --base_reg: process(clk, reset_n) begin
-        --if (reset_n = '0') then
-            --base_r <= (others => '0');
-        --
-        --elsif (rising_edge(clk)) then
-            --if (Load_calc_reg = '1') then
-              --base_r <= base_nxt;
-            --end if;
-        --end if;
-    --end process;
-
     -- TODO: Implement Blakley
+    -- B^2 mod n
+    u_blakley: entity work.mod_prod(Blakley) port map (
+        -- Utility
+        reset_n => reset_n,
+        clk => clk,
+        -- Input/Output valid ready
+        input_valid =>  mod_prod_bb_in_valid,
+        input_ready =>  mod_prod_bb_in_ready,
+        output_ready => mod_prod_bb_out_ready,
+        output_valid => mod_prod_bb_out_valid,
+        -- Data
+        A => base_r,
+        B => base_r,
+        n => mod_r,
+        C => base_nxt
+    );
     -- base_nxt <= modprod(base, base, n);
-    process(base_r, mod_r) begin
-        if (to_integer(unsigned(base_r)) = 0 or to_integer(unsigned(mod_r)) = 0) then
-            base_nxt <= (others => '0');
-        else
-            base_nxt <= std_logic_vector( ((unsigned(base_r)) * (unsigned(base_r)) mod (unsigned(mod_r)) ));
-        end if;
-    end process;
-
-
-    ----------------------- EXP REG ------------------------------
-    --exp_reg: process(clk, reset_n) begin
-        --if (reset_n = '0') then
-            --exp_r <= (others => '0');
-        --
-        --elsif (rising_edge(clk)) then
-            --if (Load_calc_reg = '1') then
-              --exp_r <= exp_nxt;
-            --end if;
+    --process(base_r, mod_r) begin
+        --if (to_integer(unsigned(base_r)) = 0 or to_integer(unsigned(mod_r)) = 0) then
+            --base_nxt <= (others => '0');
+        --else
+            --base_nxt <= std_logic_vector( ((unsigned(base_r)) * (unsigned(base_r)) mod (unsigned(mod_r)) ));
         --end if;
     --end process;
 
@@ -133,25 +136,14 @@ begin
     exp_nxt <= '0' & exp_r(C_block_size-1 downto 1); -- exp >> 1
 
 
-    ----------------------- RESULT REG ------------------------------
-    --result_reg: process(clk, reset_n) begin
-        --if (reset_n = '0') then
-            --result_r <= (others => '0');
-        --
-        --elsif (rising_edge(clk)) then
-            --if (Load_calc_reg = '1') then
-              --result_r <= result_nxt;
-            --end if;
-        --end if;
-    --end process;
-
-
-    process(base_r, result_r, exp_r, mod_r) 
+    -- Next result
+    calc_nxt_result: process(base_r, result_r, exp_r, mod_r) 
         variable is_exp_one : std_logic;
     begin
         is_exp_one := exp_r(0);
 
         if (is_exp_one = '1') then
+            -- TODO: Modprod
             if (to_integer(unsigned(base_r)) = 0 or to_integer(unsigned(result_r)) = 0 or to_integer(unsigned(mod_r)) = 0 ) then
                 result_nxt <= (others => '0');
             else

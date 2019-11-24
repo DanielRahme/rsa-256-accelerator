@@ -11,7 +11,7 @@ end exponentiation_tb;
 
 
 architecture expBehave of exponentiation_tb is
-    constant CLK_PERIOD : time := 5 ns; 
+    constant CLK_PERIOD : time := 1 ns; 
 
 	signal message 		: STD_LOGIC_VECTOR ( C_block_size-1 downto 0 );
 	signal key 			: STD_LOGIC_VECTOR ( C_block_size-1 downto 0 );
@@ -76,7 +76,7 @@ begin
     valid_in <= '0';
     ready_out <= '1';
     message   <= std_logic_vector(to_unsigned(0, message'length));
-    wait for 255*CLK_PERIOD;
+    wait for 1000000*CLK_PERIOD;
 
 	-- Second test vector
 	message <= x"8888888899999999aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffff";
